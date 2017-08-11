@@ -91,12 +91,12 @@ public class WebSocketClientHandler extends TextWebSocketHandler implements ICal
 	}
 
 	@Override
-	public void addWebSocketEventListener(ICallbackEventListener listener) {
+	public void addCallbackEventListener(ICallbackEventListener listener) {
 		this.listeners.add(listener);
 	}
 
 	@Override
-	public void removeWebSocketEventListener(ICallbackEventListener listener) {
+	public void removeCallbackEventListener(ICallbackEventListener listener) {
 		this.listeners.remove(listener);
 	}
 
