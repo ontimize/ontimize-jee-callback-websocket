@@ -3,6 +3,7 @@ package com.ontimize.jee.desktopclient.callback.websocket;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -12,6 +13,9 @@ import java.util.concurrent.TimeoutException;
 
 import javax.websocket.EncodeException;
 
+import com.ontimize.jee.common.exceptions.OntimizeJEERuntimeException;
+import com.ontimize.jee.common.jackson.OntimizeMapper;
+import com.ontimize.util.Base64Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -182,7 +186,13 @@ public class WebSocketClientHandler extends TextWebSocketHandler implements ICal
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage textMessage) throws Exception {
 		super.handleTextMessage(session, textMessage);
-		CallbackWrapperMessage wrappedMessage = CallbackWrapperMessage.deserialize(textMessage.getPayload());
+		CallbackWrapperMessage wrappedMessage = null;
+		try {
+			String newMessage = Base64Utils.decode(new String(textMessage.getPayload().getBytes(StandardCharsets.ISO_8859_1)));
+			wrappedMessage =  new OntimizeMapper().readValue(newMessage, CallbackWrapperMessage.class);
+		} catch (Exception error) {
+			throw new OntimizeJEERuntimeException(error);
+		}
 		this.fireMessageEvent(wrappedMessage);
 	}
 

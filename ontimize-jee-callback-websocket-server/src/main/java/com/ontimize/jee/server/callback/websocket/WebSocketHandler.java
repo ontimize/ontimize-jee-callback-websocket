@@ -1,9 +1,13 @@
 package com.ontimize.jee.server.callback.websocket;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ontimize.jee.common.exceptions.OntimizeJEERuntimeException;
+import com.ontimize.jee.common.jackson.OntimizeMapper;
+import com.ontimize.util.Base64Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -50,7 +54,14 @@ public class WebSocketHandler extends TextWebSocketHandler implements ICallbackH
 	 */
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
-		CallbackWrapperMessage wrappedMessage = CallbackWrapperMessage.deserialize(message.getPayload());
+		CallbackWrapperMessage wrappedMessage = null;
+		try {
+			String newMessage = Base64Utils.decode(new String(message.getPayload().getBytes(StandardCharsets.ISO_8859_1)));
+			wrappedMessage =  new OntimizeMapper().readValue(newMessage, CallbackWrapperMessage.class);
+		} catch (Exception error) {
+			throw new OntimizeJEERuntimeException(error);
+		}
+		//CallbackWrapperMessage.deserialize(message.getPayload());
 		this.fireMessageReceived(new WebSocketCallbackSession(session), wrappedMessage);
 	}
 
